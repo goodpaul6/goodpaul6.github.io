@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <link rel="stylesheet" href="../styles.css">
+    </head>
+    <body>
+        <article>
+            <header>
+                <h1>Simple Async IO Using C++17</h1>
+                <p>How to build a simple async IO system in C++17 from scratch.</p>
+                <pre>
+// An echo server demonstrating the API we&#x27;ll be building.
+
+struct Server;
+
+struct Client {
+    Server* server = nullptr;
+
+    Socket socket;
+    bool closed = false;
+
+    char buf[128];
+
+    Client(Server&amp; server, Socket socket)
+        : server{&amp;server}, socket{std::move(socket)} {
+        // Start the receive loop
+        server-&gt;io_context.async_recv(this-&gt;socket, buf, sizeof(buf),
+                                      [this](int len) { recv_handler(len); });
+    }
+
+    void recv_handler(int len) {
+        if (len &lt;= 0) {
+            closed = true;
+            return;
+        }
+
+        std::printf(&quot;Received: %.*s.\n&quot;, len, buf);
+
+        // Copy the buffer onto the heap and tie its lifetime to
+        // that of the lambda
+        auto shared_buf = std::make_shared&lt;std::vector&lt;char&gt;&gt;();
+
+        shared_buf.resize(len);
+        std::memcpy(shared_buf-&gt;data(), buf, len);
+
+        auto buf_data = shared_buf-&gt;data();
+
+        // Write everything we received back
+        async_send_all(server-&gt;io_context, socket, buf_data, len,
+                       [shared_buf = std::move(shared_buf)](int) {});
+
+        // Queue this client to receive more
+        server-&gt;io_context.async_recv(this-&gt;socket, buf, sizeof(buf),
+                                      [this](int len) { recv_handler(len); });
+    }
+};
+
+struct Server {
+    IOContext io_context;
+
+    Socket socket;
+
+    std::list&lt;Client&gt; clients;
+
+    Server(unsigned short port) : socket{Socket::ListenParams{port}} {}
+
+    void run() {
+        io_context.async_accept(socket, [this](Socket socket) {
+            accept_handler(std::move(socket));
+        });
+        io_context.run();
+    }
+
+    void accept_handler(Socket socket) {
+        // Remove disconnected clients
+        auto clients_end = std::remove_if(clients.begin(), clients.end(),
+                                          [](auto&amp; c) { return c.closed; });
+
+        clients.erase(clients_end, clients.end());
+
+        // Add the new socket
+        clients.emplace_back(*this, std::move(socket));
+
+        // Continue accepting more clients
+        io_context.async_accept(socket, [this](Socket socket) {
+            accept_handler(std::move(socket));
+        });
+    }
+};
+
+int main(int argc, char** argv) {
+#ifdef SERVER
+    // Async IO server
+    Server server{42690};
+
+    server.run();
+#else
+    // Simple synchronous client
+    Socket socket{
+        Socket::ConnectParams{argv[1], static_cast&lt;unsigned short&gt;(argv[2])}};
+
+    socket.set_non_blocking(false);
+
+    std::string s;
+
+    while (std::getline(std::cin, s)) {
+        send_all(socket, s.data(), s.size());
+        recv_all(socket, s.data(), s.size());
+
+        std::printf(&quot;Received: %s\n&quot;, s.c_str());
+    }
+#endif
+
+    return 0;
+}</pre>
+            </header>
+            <section>
+                <h2>Why Not Use <a href="https://think-async.com/Asio/">ASIO</a>?</h2>
+                <p>
+                    First of all, ASIO is a fantastic library, and you'll see a
+                    lot of similarities between its API and the one we'll build
+                    over the course of this blog post. However, as is the case with
+                    a lot of projects I build, I always find value in writing
+                    simple code that does exactly what I need; no more, no less.
+                </p>
+
+                <p>
+                    The first advantage is debuggability. It is very easy to reason
+                    about what is going on underneath the hood since everything is
+                    approximately one layer deep and there are only a handful of
+                    files. Thanks to ASIO, we already have an approximation for what
+                    a useful async IO API looks like, making the implementation much 
+                    more focused.
+                </p>
+
+                <p>
+                    The second advantage is compile times. Naturally, the footprint
+                    of what we're building here is much smaller than that of ASIO.
+                    More importantly, we don't use any template metaprogramming since 
+                    it is simply not needed for the capabilities we're providing
+                    here.
+                </p>
+
+                <p>
+                    The third is that it is fun. I wrote this code for 
+                    <a href="https://github.com/goodpaul6/boutique">Boutique</a> 
+                    and one of the goals of that project is to avoid external
+                    dependencies to explore all the details involved in building
+                    a production-ready in-memory database (<em>Maybe even use it
+                    for some of our internal services at
+                    <a href="https://postgrid.com">PostGrid</a></em>). 
+                    This is (<em>arguably</em>) a lot more fun if we're spending the 
+                    majority of the time reasoning about interesting problems like 
+                    "How can I handle many connections on a single thread?" as 
+                    opposed to "How can I glue this networking library with 
+                    this storage library?"
+                </p>
+                
+                <p>
+                    TODO Broader point about how problems that *many* (not all) libraries
+                    solve are overblown or the libraries are just made to be too general
+                    and so their complexity spirals.
+                </p>
+            </section>
+            <section>
+                <h2>Creating A Socket</h2>
+                <p>
+                    We'll start by creating a TCP socket abstraction that can work nicely
+                    with the rest of the infrastructure we'll set up. It is a very thin 
+                    wrapper over BSD sockets, so it can be used for both synchronous and
+                    asynchronous IO.
+                </p>
+
+                <p>
+                    First, let's take a look at our header file
+                </p>
+
+                <pre>
+                    
+                </pre>
+            </section>
+        </article>
+    </body>
+</html>
