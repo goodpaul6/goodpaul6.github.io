@@ -1,4 +1,9 @@
+// example.cpp
 // An echo server demonstrating the API we'll be building.
+
+#include "context.hpp"
+#include "helpers.hpp"
+#include "socket.hpp"
 
 struct Server;
 
@@ -10,8 +15,7 @@ struct Client {
 
     char buf[128];
 
-    Client(Server& server, Socket socket)
-        : server{&server}, socket{std::move(socket)} {
+    Client(Server& server, Socket socket) : server{&server}, socket{std::move(socket)} {
         // Start the receive loop
         server->io_context.async_recv(this->socket, buf, sizeof(buf),
                                       [this](int len) { recv_handler(len); });
@@ -54,16 +58,15 @@ struct Server {
     Server(unsigned short port) : socket{Socket::ListenParams{port}} {}
 
     void run() {
-        io_context.async_accept(socket, [this](Socket socket) {
-            accept_handler(std::move(socket));
-        });
+        io_context.async_accept(socket,
+                                [this](Socket socket) { accept_handler(std::move(socket)); });
         io_context.run();
     }
 
     void accept_handler(Socket socket) {
         // Remove disconnected clients
-        auto clients_end = std::remove_if(clients.begin(), clients.end(),
-                                          [](auto& c) { return c.closed; });
+        auto clients_end =
+            std::remove_if(clients.begin(), clients.end(), [](auto& c) { return c.closed; });
 
         clients.erase(clients_end, clients.end());
 
@@ -71,9 +74,8 @@ struct Server {
         clients.emplace_back(*this, std::move(socket));
 
         // Continue accepting more clients
-        io_context.async_accept(socket, [this](Socket socket) {
-            accept_handler(std::move(socket));
-        });
+        io_context.async_accept(socket,
+                                [this](Socket socket) { accept_handler(std::move(socket)); });
     }
 };
 
@@ -85,8 +87,7 @@ int main(int argc, char** argv) {
     server.run();
 #else
     // Simple synchronous client
-    Socket socket{
-        Socket::ConnectParams{argv[1], static_cast<unsigned short>(argv[2])}};
+    Socket socket{Socket::ConnectParams{argv[1], static_cast<unsigned short>(argv[2])}};
 
     socket.set_non_blocking(false);
 

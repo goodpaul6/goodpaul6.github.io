@@ -2,8 +2,6 @@
 
 #include <optional>
 
-namespace blogio {
-
 struct Socket {
     struct ListenParams {
         unsigned short port = 6969;
@@ -40,5 +38,3 @@ struct Socket {
 private:
     int m_fd = -1;
 };
-
-}  // namespace blogio
