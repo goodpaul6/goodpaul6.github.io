@@ -20,7 +20,8 @@ void IOContext::async_recv(Socket& socket, char* buf, size_t maxlen, IntFn fn) {
     m_recv.emplace_back(std::move(op));
 }
 
-void IOContext::async_send(Socket& socket, const char* buf, size_t maxlen, IntFn fn) {
+void IOContext::async_send(Socket& socket, const char* buf, size_t maxlen,
+                           IntFn fn) {
     assert(fn);
 
     SendOp op;
@@ -69,8 +70,9 @@ void IOContext::run() {
 
         int maxfd = 0;
 
-        // We perform this copy because otherwise, when callbacks queue up new operations,
-        // it would manipulate the underlying vectors during traversal
+        // We perform this copy because otherwise, when callbacks queue up new
+        // operations, it would manipulate the underlying vectors during
+        // traversal
         auto recv_copy = m_recv;
         auto send_copy = m_send;
         auto accept_copy = m_accept;
@@ -81,8 +83,9 @@ void IOContext::run() {
         m_accept.clear();
         m_wait.clear();
 
-        // TODO We should have checks that ensure there aren't multiple operations in flight for the
-        // same fd. We don't handle this situation well right now.
+        // TODO We should have checks that ensure there aren't multiple
+        // operations in flight for the same fd. We don't handle this situation
+        // well right now.
 
         for (auto& op : recv_copy) {
             if (op.socket->fd() > maxfd) {
@@ -137,8 +140,8 @@ void IOContext::run() {
             if (FD_ISSET(op.socket->fd(), &read_fds)) {
                 auto opt_socket = op.socket->accept();
 
-                // Since the select call said we're ready to accept, we must have
-                // a socket here.
+                // Since the select call said we're ready to accept, we must
+                // have a socket here.
                 assert(opt_socket.has_value());
 
                 op.fn(std::move(*opt_socket));
@@ -155,19 +158,23 @@ void IOContext::run() {
 
         const auto is_complete = [](auto&& op) { return op.complete; };
 
-        auto recv_end = std::remove_if(recv_copy.begin(), recv_copy.end(), is_complete);
-        auto send_end = std::remove_if(send_copy.begin(), send_copy.end(), is_complete);
-        auto accept_end = std::remove_if(accept_copy.begin(), accept_copy.end(), is_complete);
-        auto wait_end = std::remove_if(wait_copy.begin(), wait_copy.end(), is_complete);
+        auto recv_end =
+            std::remove_if(recv_copy.begin(), recv_copy.end(), is_complete);
+        auto send_end =
+            std::remove_if(send_copy.begin(), send_copy.end(), is_complete);
+        auto accept_end =
+            std::remove_if(accept_copy.begin(), accept_copy.end(), is_complete);
+        auto wait_end =
+            std::remove_if(wait_copy.begin(), wait_copy.end(), is_complete);
 
         recv_copy.erase(recv_end, recv_copy.end());
         send_copy.erase(send_end, send_copy.end());
         accept_copy.erase(accept_end, accept_copy.end());
         wait_copy.erase(wait_end, wait_copy.end());
 
-        // m_recv, send, etc currently contain new operations, and recv_copy contains previous
-        // operations (that are incomplete), so to respect ordering, we put recv_copy operations
-        // before m_recv ops.
+        // m_recv, send, etc currently contain new operations, and recv_copy
+        // contains previous operations (that are incomplete), so to respect
+        // ordering, we put recv_copy operations before m_recv ops.
 
         recv_copy.insert(recv_copy.end(), m_recv.begin(), m_recv.end());
         send_copy.insert(send_copy.end(), m_send.begin(), m_send.end());

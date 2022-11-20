@@ -87,4 +87,6 @@ void Timer::reset(const Params& params) {
     }
 }
 
-void Timer::set_non_blocking(bool enabled) { ::set_non_blocking(m_fd, enabled); }
+void Timer::set_non_blocking(bool enabled) {
+    ::set_non_blocking(m_fd, enabled);
+}

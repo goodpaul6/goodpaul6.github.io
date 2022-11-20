@@ -25,7 +25,8 @@ Socket::Socket(const ListenParams& params) {
 
     int opt = 1;
 
-    int res = setsockopt(fd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt, sizeof(opt));
+    int res = setsockopt(fd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &opt,
+                         sizeof(opt));
 
     if (res < 0) {
         throw_errno("Failed to set socket option");
@@ -70,7 +71,8 @@ Socket::Socket(const ConnectParams& params) {
     bool success = false;
 
     for (auto* cur = res; cur; cur = cur->ai_next) {
-        if (::connect(fd, reinterpret_cast<sockaddr*>(cur->ai_addr), cur->ai_addrlen) < 0) {
+        if (::connect(fd, reinterpret_cast<sockaddr*>(cur->ai_addr),
+                      cur->ai_addrlen) < 0) {
             continue;
         }
 
@@ -147,7 +149,9 @@ int Socket::send(const char* buf, int maxlen) {
 
 int Socket::fd() const { return m_fd; }
 
-void Socket::set_non_blocking(bool enabled) { ::set_non_blocking(m_fd, enabled); }
+void Socket::set_non_blocking(bool enabled) {
+    ::set_non_blocking(m_fd, enabled);
+}
 
 void Socket::set_no_delay(bool enabled) {
     int opt = static_cast<int>(enabled);

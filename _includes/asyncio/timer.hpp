@@ -4,7 +4,8 @@
 
 struct Timer {
     struct Params {
-        std::chrono::nanoseconds init_expiration = std::chrono::nanoseconds::zero();
+        std::chrono::nanoseconds init_expiration =
+            std::chrono::nanoseconds::zero();
         std::chrono::nanoseconds interval = std::chrono::nanoseconds::zero();
     };
 

@@ -5,7 +5,8 @@
 #include <system_error>
 
 void throw_errno(const char* what) {
-    throw std::system_error{make_error_code(static_cast<std::errc>(errno)), what};
+    throw std::system_error{make_error_code(static_cast<std::errc>(errno)),
+                            what};
 }
 
 void set_non_blocking(int fd, bool enabled) {
@@ -25,4 +26,3 @@ void set_non_blocking(int fd, bool enabled) {
         throw_errno("Failed to set fnctl flags on socket");
     }
 }
-

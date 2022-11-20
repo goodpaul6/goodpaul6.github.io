@@ -64,15 +64,16 @@ struct Server {
     Server(unsigned short port) : socket{Socket::ListenParams{port}} {}
 
     void run() {
-        io_context.async_accept(
-            socket, [this](Socket client_socket) { accept_handler(std::move(client_socket)); });
+        io_context.async_accept(socket, [this](Socket client_socket) {
+            accept_handler(std::move(client_socket));
+        });
         io_context.run();
     }
 
     void accept_handler(Socket client_socket) {
         // Remove disconnected clients
-        auto clients_end =
-            std::remove_if(clients.begin(), clients.end(), [](auto& c) { return c.closed; });
+        auto clients_end = std::remove_if(clients.begin(), clients.end(),
+                                          [](auto& c) { return c.closed; });
 
         clients.erase(clients_end, clients.end());
 
@@ -80,8 +81,9 @@ struct Server {
         clients.emplace_back(io_context, std::move(client_socket));
 
         // Continue accepting more clients
-        io_context.async_accept(
-            socket, [this](Socket client_socket) { accept_handler(std::move(client_socket)); });
+        io_context.async_accept(socket, [this](Socket client_socket) {
+            accept_handler(std::move(client_socket));
+        });
     }
 };
 
@@ -93,7 +95,8 @@ int main(int argc, char** argv) {
     server.run();
 #else
     // Simple synchronous client
-    Socket socket{Socket::ConnectParams{argv[1], static_cast<unsigned short>(std::atoi(argv[2]))}};
+    Socket socket{Socket::ConnectParams{
+        argv[1], static_cast<unsigned short>(std::atoi(argv[2]))}};
 
     socket.set_non_blocking(false);
 
