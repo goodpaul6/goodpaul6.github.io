@@ -4,15 +4,8 @@ title: About
 permalink: /about/
 ---
 
-This is the base Jekyll theme. You can find out more info about customizing your Jekyll theme, as well as basic Jekyll usage documentation at [jekyllrb.com](https://jekyllrb.com/)
+Hi, my name is Apaar and I do tech stuff at [PostGrid](https://postgrid.com). Most of my prior work has
+been in games, game engines, and compilers. I'm trying to see how I can incorporate more of that
+thinking to the web. You can find the source code to most of my projects in the GitHub link below.
 
-You can find the source code for Minima at GitHub:
-[jekyll][jekyll-organization] /
-[minima](https://github.com/jekyll/minima)
-
-You can find the source code for Jekyll at GitHub:
-[jekyll][jekyll-organization] /
-[jekyll](https://github.com/jekyll/jekyll)
-
-
-[jekyll-organization]: https://github.com/jekyll
+I also graduated from CS at UWaterloo in 2021.
