@@ -7,25 +7,15 @@ categories: cpp
 ---
 
 I feel like there are enough blog posts on the internet explaining the utility
-of async IO, so won't discuss that here. That being said, I enjoyed setting up
-this system from scratch for my in-memory database project
-[boutique](https://github.com/goodpaul6/boutique).
+of async IO, so won't discuss that here. Let's start by addressing the elephant
+in the room.
 
-## An Example Using Our API
-
-Here's an echo server created using the asio system we'll be building over the
-course of this post. By the way, this isn't blogware, you can grab the full
-source
-[here](https://github.com/goodpaul6/goodpaul6.github.io/tree/main/_includes/asyncio).
-
-{% highlight cpp %} {% include asyncio/example.cpp %} {% endhighlight %}
-
-## Why Not Use [ASIO](https://think-async.com/Asio)
+## Why Not Use [ASIO](https://think-async.com/Asio)?
 
 First of all, ASIO is a fantastic library, and you can see a lot of similarities
-between its API and the example above. However, as is the case with a lot of
-projects I build, I always find value in writing simple code that does exactly
-what I need; no more, no less.
+between its API and the one we'll build here. However, as is the case with a lot
+of projects I build, I always find value in writing simple code that does
+exactly what I need; no more, no less.
 
 The first advantage is debuggability. It is very easy to reason about what is
 going on underneath the hood since everything is approximately one layer deep
@@ -41,8 +31,36 @@ we're providing here.
 The third is that it is fun. I wrote this code for
 [Boutique](https://github.com/goodpaul6/boutique) and one of the goals of that
 project is to avoid external dependencies to explore all the details involved in
-building a production-ready in-memory database (_Maybe even use it for some of
-our internal services at [PostGrid](https://postgrid.com)_). This is _arguably_
-a lot more fun if we're spending the majority of the time reasoning about
-interesting problems like "How do I solve my specific problem?" as opposed to
-"How can I glue this networking library with this storage library?"
+building an in-memory database. This is _arguably_ a lot more fun if we're
+spending the majority of the time reasoning about interesting problems like "How
+do I solve my specific problem?" as opposed to "How can I glue this networking
+library with this storage library?"
+
+## An Example Using Our API
+
+Here's an echo server created using the asio system we'll be building over the
+course of this post. By the way, this isn't blogware, you can grab the full
+source
+[here](https://github.com/goodpaul6/goodpaul6.github.io/tree/main/_includes/asyncio).
+
+<!-- prettier-ignore -->
+{% highlight cpp %} 
+{% include asyncio/example.cpp %} 
+{% endhighlight %}
+
+## Creating A Socket
+
+We'll start by creating a TCP socket abstraction that can work nicely with the
+rest of our infrastructure. It is a very thin wrapper over BSD sockets, so it
+can be used for both synchronous and asynchronous IO (demonstrated in the
+example above).
+
+Let's take a look at `socket.hpp`
+
+<!-- prettier-ignore -->
+{% highlight cpp %} 
+{% include asyncio/socket.hpp %} 
+{% endhighlight %}
+
+You can see that we have a pretty barebones API, but all we really care about is
+being able to `send` and `recv` and do so without blocking.
