@@ -1,8 +1,9 @@
 ---
 layout: post
 title: 'Simple Async IO in C++17'
-date: 2022-11-19 18:28:00 -0500
+date: 2023-01-19 01:15:00 -0500
 author: Apaar Madan
+published: false
 categories: cpp
 ---
 
@@ -63,4 +64,19 @@ Let's take a look at `socket.hpp`
 {% endhighlight %}
 
 You can see that we have a pretty barebones API, but all we really care about is
-being able to `send` and `recv` and do so without blocking.
+being able to `send` and `recv` and do so without blocking. Note that we can
+also modify whether operations block using `Socket::set_non_blocking`. This is
+useful for creating simple synchronous clients like the one in our example
+above.
+
+You can take a look at the implementation
+[here](https://github.com/goodpaul6/goodpaul6.github.io/tree/main/_includes/asyncio/socket.cpp).
+The only thing of note is the copious use of the following helper
+
+<!-- prettier-ignore -->
+{% highlight cpp %} 
+void throw_errno(const char* what) {
+    throw std::system_error{make_error_code(static_cast<std::errc>(errno)),
+                            what};
+}
+{% endhighlight %}
