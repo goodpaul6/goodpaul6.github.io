@@ -74,9 +74,9 @@ You can take a look at the implementation
 The only thing of note is the copious use of the following helper
 
 <!-- prettier-ignore -->
-{% highlight cpp %} 
+```cpp
 void throw_errno(const char* what) {
     throw std::system_error{make_error_code(static_cast<std::errc>(errno)),
                             what};
 }
-{% endhighlight %}
+```

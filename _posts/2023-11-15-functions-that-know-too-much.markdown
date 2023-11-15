@@ -4,7 +4,7 @@ title: 'Functions That Know Too Much'
 date: 2023-11-15 11:33:00 -0500
 author: Apaar Madan
 published: true
-categories: style typescript
+categories: style
 ---
 
 I try to avoid writing functions that know too much. What is a "function that
