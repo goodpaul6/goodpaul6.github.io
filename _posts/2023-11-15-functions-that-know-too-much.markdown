@@ -98,9 +98,11 @@ const batchIDPrefixRegexes = (idPrefixes: string[]): RegExp[] => {
 
         curParts.push(id);
 
+        const isLastPrefix = index === idPrefixes.length - 1;
+
         // The 4 is because of the parens and non-capturing
         // specifier. The 5 is with the pipe included.
-        const additionalChars = index === ids.length ? 4 : 5;
+        const additionalChars = isLastPrefix ? 4 : 5;
 
         curLength += additionalChars + id.length;
     }
